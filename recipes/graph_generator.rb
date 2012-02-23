@@ -1,5 +1,5 @@
 #
-# Cookbook Name:: graphite
+# Cookbook Name:: graphiti
 # Recipe:: graph_generator
 #
 # Copyright 2012, AJ Christensen <aj@junglist.gen.nz>
