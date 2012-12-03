@@ -33,7 +33,7 @@ when "debian"
   gem_package "bundler"
 
 when "fedora"
-  %w{ruby ruby-devel rubygem-bundler rubygem-daemons rubygem-rack rubygem-rake rubygem-sinatra rubygem-haml redis libcurl-devel}.each do |pkg|
+  %w{ruby ruby-devel rubygem-bundler rubygem-daemons rubygem-rack rubygem-rake rubygem-sinatra rubygem-haml libcurl-devel}.each do |pkg|
     package pkg do
       action :install
     end
