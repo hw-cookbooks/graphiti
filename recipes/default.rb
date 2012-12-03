@@ -18,95 +18,118 @@
 #
 include_recipe "build-essential"
 
-%w[libcurl4-gnutls-dev ruby1.9.1-full].each do |pkg|
-  apt_package pkg
+user node['graphiti']['user'] do
+  comment "Graphiti Graphite Dashboard"
+  action :create
 end
 
-gem_package "bundler"
+case node['platform_family']
+when "debian"
+  %w[libcurl4-gnutls-dev ruby1.9.1-full].each do |pkg|
+    package pkg do
+      action :install
+    end
+  end
+  gem_package "bundler"
 
-remote_file node.graphiti.tarfile do
+when "fedora"
+  %w{ruby ruby-devel rubygem-bundler rubygem-daemons rubygem-rack rubygem-rake rubygem-sinatra rubygem-haml redis libcurl-devel}.each do |pkg|
+    package pkg do
+      action :install
+    end
+  end
+
+end
+
+remote_file node['graphiti']['tarfile'] do
   mode "00666"
-  owner "www-data"
-  group "www-data"
-  source node.graphiti.url
+  owner node['graphiti']['user']
+  group node['graphiti']['user']
+  source node['graphiti']['url']
   action :create_if_missing
 end
 
-directory node.graphiti.base do
-  owner "www-data"
-  group "www-data"
+directory node['graphiti']['base'] do
+  owner node['graphiti']['user']
+  group node['graphiti']['user']
 end
 
 directory File.join(node.graphiti.base, "log") do
-  owner "www-data"
-  group "www-data"
+  owner node['graphiti']['user']
+  group node['graphiti']['user']
 end
 
 execute "bundle" do
   command "bundle install --deployment --binstubs; " +
     "bundle exec rake graphiti:metrics"
 
-  user "www-data"
-  group "www-data"
-  environment "PATH" => "/var/lib/gems/1.9.1/bin"
-  cwd node.graphiti.base
+  cwd node['graphiti']['base']
   action :nothing
 end
 
 cron "graphiti:metrics" do
   minute "*/15"
-  command "cd #{node.graphiti.base} && /var/lib/gems/1.9.1/bin/bundle exec rake graphiti:metrics"
-  user "www-data"
+  command "cd #{node['graphiti']['base']} && bundle exec rake graphiti:metrics"
+  user node['graphiti']['user']
 end
 
 execute "graphiti: untar" do
-  command "tar zxf #{node.graphiti.tarfile} -C #{node.graphiti.base} --strip-components=1"
-  creates File.join(node.graphiti.base, "Rakefile")
-  user "www-data"
-  group "www-data"
+  command "tar zxf #{node['graphiti']['tarfile']} -C #{node['graphiti']['base']} --strip-components=1"
+  creates File.join(node['graphiti']['base'], "Rakefile")
+  user node['graphiti']['user']
+  group node['graphiti']['user']
   notifies :run, resources(:execute => "bundle"), :immediately
 end
 
-aws = data_bag_item "aws", node.chef_environment
-template File.join(node.graphiti.base, "config", "amazon_s3.yml") do
-  variables :hash => { node.chef_environment => {
-      "bucket" => node.graphiti.s3_bucket,
-      "access_key_id" => aws["aws_access_key_id"],
-      "secret_access_key" => aws["aws_secret_access_key"]
-    } }
-  owner "www-data"
-  group "www-data"
-  notifies :restart, "service[graphiti]"
-end
+# XXX domain-specific stuff. Not everyone has their databags set up like this
+# (nor does everyone want graph storage in S3 as a feature)
+#aws = data_bag_item "aws", node.chef_environment
+#template File.join(node.graphiti.base, "config", "amazon_s3.yml") do
+#  variables :hash => { node.chef_environment => {
+#      "bucket" => node.graphiti.s3_bucket,
+#      "access_key_id" => aws["aws_access_key_id"],
+#      "secret_access_key" => aws["aws_secret_access_key"]
+#    } }
+#  owner node['graphiti']['user']
+#  group node['graphiti']['user']
+#  notifies :restart, "service[graphiti]"
+#end
 
 template File.join(node.graphiti.base, "config", "settings.yml") do
-  owner "www-data"
-  group "www-data"
+  owner node['graphiti']['user']
+  group node['graphiti']['user']
   variables :hash => {
-    "graphite_host" => node.graphiti.graphite_host,
-    "redis_url" => node.graphiti.redis_url,
-    "tmp_dir" => node.graphiti.tmp_dir,
+    "graphite_host" => node['graphiti']['graphite_host'],
+    "redis_url" => node['graphiti']['redis_url'],
+    "tmp_dir" => node['graphiti']['tmp_dir'],
     "fonts" => %w[DroidSans DejaVuSans],
-    "metric_prefix" => node.graphiti.metric_prefix,
-    "default_options" => node.graphiti.default_options.to_hash,
-    "default_metrics" => node.graphiti.default_metrics.to_a,
+    "metric_prefix" => node['graphiti']['metric_prefix'],
+    "default_options" => node['graphiti']['default_options'].to_hash,
+    "default_metrics" => node['graphiti']['default_metrics'].to_a,
   }
   notifies :restart, "service[graphiti]"
 end
 
 directory "/var/run/unicorn" do
-  owner "www-data"
-  group "www-data"
+  owner node['graphiti']['user']
+  group node['graphiti']['user']
 end
 
-template File.join(node.graphiti.base, "config", "unicorn.rb") do
-  owner "www-data"
-  group "www-data"
-  variables( :worker_processes => node.cpu.total,
-             :timeout => node.graphiti.unicorn.timeout,
-             :cow_friendly => node.graphiti.unicorn.cow_friendly )
+template File.join(node['graphiti']['base'], "config", "unicorn.rb") do
+  owner node['graphiti']['user']
+  group node['graphiti']['user']
+  variables( :worker_processes => node['cpu']['total'],
+             :timeout => node['graphiti']['unicorn']['timeout'],
+             :cow_friendly => node['graphiti']['unicorn']['cow_friendly'] )
   notifies :restart, "service[graphiti]"
 end
 
-runit_service "graphiti"
-
+case node['platform_family']
+when "debian"
+  runit_service "graphiti"
+when "fedora"
+  # XXX still need to write init script
+  service "graphiti" do
+    action [ :enable, :start ]
+  end
+end
