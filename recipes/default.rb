@@ -33,7 +33,7 @@ when "debian"
   gem_package "bundler"
 
 when "fedora"
-  %w{ruby ruby-devel rubygem-bundler rubygem-daemons rubygem-rack rubygem-rake rubygem-sinatra rubygem-haml libcurl-devel}.each do |pkg|
+  %w{ruby ruby-devel rubygem-bundler rubygem-daemons rubygem-linecache19 rubygem-rack rubygem-rake rubygem-sinatra rubygem-haml libcurl-devel}.each do |pkg|
     package pkg do
       action :install
     end
@@ -59,11 +59,17 @@ directory File.join(node['graphiti']['base'], "log") do
   group node['graphiti']['user']
 end
 
-execute "bundle" do
-  command "bundle install --deployment --binstubs; " +
-    "bundle exec rake graphiti:metrics"
-
+execute "bundle-install" do
+  command "bundle install --deployment --binstubs"
   cwd node['graphiti']['base']
+#  user node['graphiti']['user']
+  action :nothing
+end
+
+execute "bundle-rake-generate" do
+  command "bundle exec rake graphiti:metrics"
+  cwd node['graphiti']['base']
+  user node['graphiti']['user']
   action :nothing
 end
 
@@ -78,7 +84,7 @@ execute "graphiti: untar" do
   creates File.join(node['graphiti']['base'], "Rakefile")
   user node['graphiti']['user']
   group node['graphiti']['user']
-  notifies :run, resources(:execute => "bundle"), :immediately
+  notifies :run, "execute[bundle-install]", :immediately
 end
 
 # XXX domain-specific stuff. Not everyone has their databags set up like this
@@ -99,15 +105,17 @@ template File.join(node['graphiti']['base'], "config", "settings.yml") do
   owner node['graphiti']['user']
   group node['graphiti']['user']
   variables :hash => {
-    "graphite_host" => node['graphiti']['graphite_host'],
+    "graphite_base_url" => node['graphiti']['graphite_base_url'],
     "redis_url" => node['graphiti']['redis_url'],
     "tmp_dir" => node['graphiti']['tmp_dir'],
     "fonts" => %w[DroidSans DejaVuSans],
     "metric_prefix" => node['graphiti']['metric_prefix'],
     "default_options" => node['graphiti']['default_options'].to_hash,
+    "auto_refresh" => node['graphiti']['auto_refresh'].to_hash,
     "default_metrics" => node['graphiti']['default_metrics'].to_a,
   }
   notifies :restart, "service[graphiti]"
+  notifies :run, "execute[bundle-rake-generate]", :immediately
 end
 
 directory "/var/run/unicorn" do

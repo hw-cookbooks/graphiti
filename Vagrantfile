@@ -52,16 +52,17 @@ Vagrant::Config.run do |config|
 
   config.vm.provision :chef_solo do |chef|
     chef.json = {
-      :mysql => {
-        :server_root_password => 'rootpass',
-        :server_debian_password => 'debpass',
-        :server_repl_password => 'replpass'
+      :graphiti => {
+        :base => '/opt/graphiti',
+        :graphite_base_url => 'http://graphite.2mlabs.com',
+        :tmp_dir => '/opt/graphiti/tmp'
       }
     }
 
     chef.binary_path = '/usr/local/bin'
 
     chef.run_list = [
+      "recipe[redis::server]",
       "recipe[graphiti::default]"
     ]
   end
