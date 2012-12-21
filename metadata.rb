@@ -1,3 +1,4 @@
+name             "graphiti"
 maintainer       "Heavy Water Software Inc."
 maintainer_email "ops@hw-ops.com"
 license          "Apache 2.0"
@@ -9,6 +10,6 @@ version          "0.0.1"
   depends d
 end
 
-%w{ubuntu debian fedora suse amazon}.each do |os|
+%w{ubuntu debian fedora amazon}.each do |os|
   supports os
 end

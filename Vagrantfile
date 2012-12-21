@@ -21,7 +21,7 @@ Vagrant::Config.run do |config|
   # config.vm.box = "Berkshelf-CentOS-6.3-x86_64-minimal"
   config.vm.box = "Fedora-18-x86_64"
 
-  #config.vm.box_url = "https://dl.dropbox.com/u/31081437/Berkshelf-CentOS-6.3-x86_64-minimal.box"
+  config.vm.box_url = "https://dl.dropbox.com/u/47541301/vagrantboxes/Fedora-18-x86_64.box"
 
   # Boot with a GUI so you can see the screen. (Default is headless)
   # config.vm.boot_mode = :gui

@@ -54,7 +54,7 @@ directory node['graphiti']['base'] do
   group node['graphiti']['user']
 end
 
-directory File.join(node.graphiti.base, "log") do
+directory File.join(node['graphiti']['base'], "log") do
   owner node['graphiti']['user']
   group node['graphiti']['user']
 end
@@ -95,7 +95,7 @@ end
 #  notifies :restart, "service[graphiti]"
 #end
 
-template File.join(node.graphiti.base, "config", "settings.yml") do
+template File.join(node['graphiti']['base'], "config", "settings.yml") do
   owner node['graphiti']['user']
   group node['graphiti']['user']
   variables :hash => {
@@ -128,7 +128,15 @@ case node['platform_family']
 when "debian"
   runit_service "graphiti"
 when "fedora"
-  # XXX still need to write init script
+
+  template "/etc/init.d/graphiti" do
+    source "graphiti-init.erb"
+    owner "root"
+    group "root"
+    mode  00755
+    action :create
+  end
+
   service "graphiti" do
     action [ :enable, :start ]
   end

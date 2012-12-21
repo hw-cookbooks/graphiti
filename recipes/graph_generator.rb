@@ -17,6 +17,10 @@
 # limitations under the License.
 #
 
+if Chef::Config[:solo]
+  Chef::Log.warn("This recipe does not work properly in Solo mode; it depends on search.")
+  return
+end
 nodes = search(:node, "graphiti_graph_types:*")
 
 nodes.map do |remote_node|
@@ -46,7 +50,7 @@ nodes.map do |remote_node|
       "title" => "#{remote_node.fqdn} #{graph_type}"
     }
 
-    options = node.graphiti.default_options.to_hash.deep_merge(options)
+    options = node['graphiti']['default_options'].to_hash.deep_merge(options)
 
     graphiti_graph options["title"] do
       type graph_type
@@ -84,7 +88,7 @@ end
                     end
     }
 
-    options = node.graphiti.default_options.to_hash.deep_merge(options)
+    options = node['graphiti']['default_options'].to_hash.deep_merge(options)
 
     graphiti_graph "#{title}_#{from}" do
       type title
