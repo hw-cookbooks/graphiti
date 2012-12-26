@@ -18,38 +18,40 @@
 # Source function library
 . /etc/init.d/functions
 
-#exec="<%= @client_bin %>"
+exec="<%= node['graphiti']['base'] %>/bin/unicorn_rails"
 prog="graphiti"
 
 [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
 
-#config=${CONFIG-/etc/chef/client.rb}
-#pidfile=${PIDFILE-/var/run/chef/client.pid}
-#lockfile=${LOCKFILE-/var/lock/subsys/$prog}
+config=${CONFIG-<%= node['graphiti']['base'] %>/config/unicorn.rb}
+pidfile=${PIDFILE-/var/run/unicorn/unicorn.pid}
+railsroot=${RAILS_ROOT-<%= node['graphiti']['base'] %>}
+railsenv=${RAILS_ENV-production}
+lockfile=${LOCKFILE-/var/lock/subsys/$prog}
 #logfile=${LOGFILE-/var/log/chef/client.log}
 #interval=${INTERVAL-1800}
 #splay=${SPLAY-20}
 #options=${OPTIONS-}
 
 start() {
-#    [ -x $exec ] || exit 5
-#    [ -f $config ] || exit 6
+    [ -x $exec ] || exit 5
+    [ -f $config ] || exit 6
     echo -n $"Starting $prog: "
-#    daemon $exec -d -c "$config" -L "$logfile" -P "$pidfile" -i "$interval" -s "$splay" "$options"
-#    retval=$?
-#    echo
-#    [ $retval -eq 0 ] && touch $lockfile
-#    return $retval
+    daemon --user graphiti $exec -c $config -E $railsenv -D
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && touch $lockfile
+    return $retval
     return 0
 }
 
 stop() {
     echo -n $"Stopping $prog: "
-#    killproc -p $pidfile $exec
-#    retval=$?
-#    echo
-#    [ $retval -eq 0 ] && rm -f $lockfile
-#    return $retval
+    killproc -p $pidfile $exec
+    retval=$?
+    echo
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
     return 0
 }
 
@@ -60,10 +62,10 @@ restart () {
 
 reload() {
     echo -n $"Reloading $prog: "
-#    killproc -p $pidfile $exec -HUP
-#    retval=$?
-#    echo
-#    return $retval 
+    killproc -p $pidfile $exec -HUP
+    retval=$?
+    echo
+    return $retval
     return 0
 }
 
