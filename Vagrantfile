@@ -52,9 +52,7 @@ Vagrant::Config.run do |config|
 
   config.vm.provision :chef_solo do |chef|
     chef.json = {
-      :graphiti => {
         :base => '/opt/graphiti',
-        :graphite_base_url => 'http://graphite.2mlabs.com',
         :tmp_dir => '/opt/graphiti/tmp'
       }
     }
