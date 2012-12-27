@@ -28,10 +28,6 @@ pidfile=${PIDFILE-/var/run/unicorn/unicorn.pid}
 railsroot=${RAILS_ROOT-<%= node['graphiti']['base'] %>}
 railsenv=${RAILS_ENV-production}
 lockfile=${LOCKFILE-/var/lock/subsys/$prog}
-#logfile=${LOGFILE-/var/log/chef/client.log}
-#interval=${INTERVAL-1800}
-#splay=${SPLAY-20}
-#options=${OPTIONS-}
 
 start() {
     [ -x $exec ] || exit 5
