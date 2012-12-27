@@ -54,7 +54,6 @@ Vagrant::Config.run do |config|
     chef.json = {
         :base => '/opt/graphiti',
         :tmp_dir => '/opt/graphiti/tmp'
-      }
     }
 
     chef.binary_path = '/usr/local/bin'
