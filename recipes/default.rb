@@ -20,6 +20,7 @@ include_recipe "build-essential"
 
 user node['graphiti']['user'] do
   comment "Graphiti Graphite Dashboard"
+  system true
   action :create
 end
 

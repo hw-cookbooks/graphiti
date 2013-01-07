@@ -28,12 +28,13 @@ pidfile=${PIDFILE-/var/run/unicorn/unicorn.pid}
 railsroot=${RAILS_ROOT-<%= node['graphiti']['base'] %>}
 railsenv=${RAILS_ENV-production}
 lockfile=${LOCKFILE-/var/lock/subsys/$prog}
+unicornport=${UNICORN_PORT-<%= node['graphiti']['port'] %>}
 
 start() {
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
     echo -n $"Starting $prog: "
-    daemon --user graphiti $exec -c $config -E $railsenv -D
+    daemon --user graphiti $exec -c $config -E $railsenv -p $unicornport -D
     retval=$?
     echo
     [ $retval -eq 0 ] && touch $lockfile
