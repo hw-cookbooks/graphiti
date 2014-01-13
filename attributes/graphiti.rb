@@ -1,3 +1,4 @@
+default.graphiti.dependencies = %w[libcurl4-gnutls-dev]
 default.graphiti.tarfile = "/usr/src/graphiti.tgz"
 default.graphiti.url = "https://github.com/paperlesspost/graphiti/tarball/master"
 default.graphiti.base = "/srv/graphiti"

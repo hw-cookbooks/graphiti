@@ -17,8 +17,9 @@
 # limitations under the License.
 #
 include_recipe "build-essential"
+include_recipe "ruby_installer"
 
-%w[libcurl4-gnutls-dev ruby1.9.1-full].each do |pkg|
+node.graphiti.dependencies.each do |pkg|
   apt_package pkg
 end
 
@@ -45,17 +46,15 @@ end
 execute "bundle" do
   command "bundle install --deployment --binstubs; " +
     "bundle exec rake graphiti:metrics"
-
   user "www-data"
   group "www-data"
-  environment "PATH" => "/var/lib/gems/1.9.1/bin"
   cwd node.graphiti.base
   action :nothing
 end
 
 cron "graphiti:metrics" do
   minute "*/15"
-  command "cd #{node.graphiti.base} && /var/lib/gems/1.9.1/bin/bundle exec rake graphiti:metrics"
+  command "cd #{node.graphiti.base} && bundle exec rake graphiti:metrics"
   user "www-data"
 end
 
@@ -109,4 +108,3 @@ template File.join(node.graphiti.base, "config", "unicorn.rb") do
 end
 
 runit_service "graphiti"
-
