@@ -4,6 +4,9 @@ working_directory "/srv/graphiti"
 listen "/var/run/unicorn/unicorn.socket", :backlog => 64
 pid "/var/run/unicorn/unicorn.pid"
 
+stderr_path "/srv/graphiti/log/unicorn.stderr.log"
+stdout_path "/srv/graphiti/log/unicorn.stdout.log"
+
 timeout <%= @timeout %>
 
 if GC.respond_to?(:copy_on_write_friendly=)

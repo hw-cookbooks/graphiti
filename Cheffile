@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+#^syntax detection
+
+site 'http://community.opscode.com/api/v1'
+
+cookbook 'ubuntu'
+cookbook 'cron'
+cookbook 'redisio'
+cookbook 'graphite', git: 'https://github.com/hw-cookbooks/graphite.git', ref: '0.4.4'
+cookbook 'graphiti', path: '.'
