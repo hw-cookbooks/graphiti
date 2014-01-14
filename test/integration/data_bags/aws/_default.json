@@ -1,5 +1,5 @@
 {
     "id": "_default",
-    "access_key_id": "foo",
-    "secret_access_key": "bar"
+    "aws_access_key_id": "foo",
+    "aws_secret_access_key": "bar"
 }

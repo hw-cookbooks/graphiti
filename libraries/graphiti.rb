@@ -47,6 +47,27 @@ end
 
 module Graphiti
 
+  class << self
+    def data_bag_item(data_bag, item, missing_ok=false)
+      raw_hash = Chef::DataBagItem.load(data_bag, item)
+      encrypted = raw_hash.detect do |key, value|
+        if value.is_a?(Hash)
+          value.has_key?("encrypted_data")
+        end
+      end
+      if encrypted
+        secret = Chef::EncryptedDataBagItem.load_secret
+        Chef::EncryptedDataBagItem.new(raw_hash, secret)
+      else
+        raw_hash
+      end
+    rescue Chef::Exceptions::ValidationFailed,
+      Chef::Exceptions::InvalidDataBagPath,
+      Net::HTTPServerException => error
+      missing_ok ? nil : raise(error)
+    end
+  end
+
   class Common
 
     def self.resource
