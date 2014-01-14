@@ -44,18 +44,9 @@ directory File.join(node.graphiti.base, "log") do
 end
 
 execute "bundle" do
-  command "bundle install --deployment --binstubs; " +
-    "bundle exec rake graphiti:metrics"
+  command "bundle install --deployment --binstubs"
   cwd node.graphiti.base
   action :nothing
-end
-
-cron "graphiti:metrics" do
-  minute "*/15"
-  command lazy {
-    "cd #{node.graphiti.base} && #{node.languages.ruby.bin_dir}/bundle exec rake graphiti:metrics"
-  }
-  user "www-data"
 end
 
 execute "graphiti: untar" do
@@ -78,6 +69,12 @@ template File.join(node.graphiti.base, "config", "amazon_s3.yml") do
   notifies :restart, "service[graphiti]"
 end
 
+execute "graphiti:metrics" do
+  command "bundle exec rake graphiti:metrics"
+  cwd node.graphiti.base
+  action :nothing
+end
+
 template File.join(node.graphiti.base, "config", "settings.yml") do
   owner "www-data"
   group "www-data"
@@ -91,7 +88,16 @@ template File.join(node.graphiti.base, "config", "settings.yml") do
     "default_options" => node.graphiti.default_options.to_hash,
     "default_metrics" => node.graphiti.default_metrics.to_a,
   }
+  notifies :run, resources(:execute => "graphiti:metrics"), :immediately
   notifies :restart, "service[graphiti]"
+end
+
+cron "graphiti:metrics" do
+  minute "*/15"
+  command lazy {
+    "cd #{node.graphiti.base} && #{node.languages.ruby.bin_dir}/bundle exec rake graphiti:metrics"
+  }
+  user "www-data"
 end
 
 directory "/var/run/unicorn" do
