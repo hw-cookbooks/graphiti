@@ -1,5 +1,5 @@
 #!/bin/sh
 exec 2>&1
 cd <%= node.graphiti.base %>
-export RACK_ENV=<%= node.chef_environment %>
+export RACK_ENV=<%= node.graphiti.rack_env %>
 exec chpst -u www-data:www-data -l /srv/graphiti/lock -- /srv/graphiti/bin/unicorn_rails -p <%= node.graphiti.port %> -E <%= node.chef_environment %> -c /srv/graphiti/config/unicorn.rb

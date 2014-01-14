@@ -46,15 +46,15 @@ end
 execute "bundle" do
   command "bundle install --deployment --binstubs; " +
     "bundle exec rake graphiti:metrics"
-  user "www-data"
-  group "www-data"
   cwd node.graphiti.base
   action :nothing
 end
 
 cron "graphiti:metrics" do
   minute "*/15"
-  command "cd #{node.graphiti.base} && bundle exec rake graphiti:metrics"
+  command lazy {
+    "cd #{node.graphiti.base} && #{node.languages.ruby.bin_dir}/bundle exec rake graphiti:metrics"
+  }
   user "www-data"
 end
 
@@ -82,10 +82,11 @@ template File.join(node.graphiti.base, "config", "settings.yml") do
   owner "www-data"
   group "www-data"
   variables :hash => {
-    "graphite_host" => node.graphiti.graphite_host,
+    "graphite_base_url" => node.graphiti.graphite_base_url,
     "redis_url" => node.graphiti.redis_url,
     "tmp_dir" => node.graphiti.tmp_dir,
     "fonts" => %w[DroidSans DejaVuSans],
+    "auto_refresh" => node.graphiti.auto_refresh.to_hash,
     "metric_prefix" => node.graphiti.metric_prefix,
     "default_options" => node.graphiti.default_options.to_hash,
     "default_metrics" => node.graphiti.default_metrics.to_a,
@@ -107,4 +108,5 @@ template File.join(node.graphiti.base, "config", "unicorn.rb") do
   notifies :restart, "service[graphiti]"
 end
 
+include_recipe "runit"
 runit_service "graphiti"
