@@ -1,8 +1,8 @@
 #
-# Cookbook Name:: graphiti
+# Cookbook:: graphiti
 # Recipe:: graph_generator
 #
-# Copyright 2012, AJ Christensen <aj@junglist.gen.nz>
+# Copyright:: 2012, AJ Christensen <aj@junglist.gen.nz>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
 # limitations under the License.
 #
 
-nodes = search(:node, "graphiti_graph_types:*")
+nodes = search(:node, 'graphiti_graph_types:*')
 
 nodes.map do |remote_node|
-
   [remote_node.graphiti.graph_types].flatten.compact.each do |graph_type|
-
     dashboards = {
       # Graph for all nodes for this graph type
       graph_type => "all #{graph_type}",
@@ -30,7 +28,7 @@ nodes.map do |remote_node|
       remote_node.name => remote_node.fqdn,
       # Dashboard for just this node AND this graph, containing ONLY
       # this graph type
-      "#{remote_node.name}_#{graph_type}" => "#{remote_node.fqdn} #{graph_type}"
+      "#{remote_node.name}_#{graph_type}" => "#{remote_node.fqdn} #{graph_type}",
     }
 
     dashboards.each do |slug, title|
@@ -43,45 +41,42 @@ nodes.map do |remote_node|
     # then we'll be able to pass along from/to, diff colors, etc.
 
     options = {
-      "title" => "#{remote_node.fqdn} #{graph_type}"
+      'title' => "#{remote_node.fqdn} #{graph_type}",
     }
 
     options = node.graphiti.default_options.to_hash.deep_merge(options)
 
-    graphiti_graph options["title"] do
+    graphiti_graph options['title'] do
       type graph_type
       default_options options
       dashboards dashboards.keys
       remote_node remote_node
     end
   end
-
 end
 
-{ "quarterly" => "-15minutes",
-  "hourly" => "-1hour",
-  "daily" => "-1d" }.each do |slug,from|
-
+{ 'quarterly' => '-15minutes',
+  'hourly' => '-1hour',
+  'daily' => '-1d' }.each do |slug, from|
   dashboard = "qmail_#{slug}"
   graphiti_dashboard dashboard do
     title "qmail #{slug}"
   end
 
-  [ "qmail_filecount_files_stacked",
-    "qmail_filecount_files_derivative_stacked",
-    "qmail_filecount_files_integral_stacked",
-    "qmail_filecount_size_stacked",
-  ].each do |title|
-
+  %w(qmail_filecount_files_stacked
+    qmail_filecount_files_derivative_stacked
+    qmail_filecount_files_integral_stacked
+    qmail_filecount_size_stacked
+  ).each do |title|
     options = {
-      "title" => "#{title.gsub("_", " ")} #{slug}",
-      "from" => from,
-      "areaMode" => case title
+      'title' => "#{title.gsub('_', ' ')} #{slug}",
+      'from' => from,
+      'areaMode' => case title
                     when /derivative/
-                      ""
+                      ''
                     else
-                      "stacked"
-                    end
+                      'stacked'
+                    end,
     }
 
     options = node.graphiti.default_options.to_hash.deep_merge(options)
