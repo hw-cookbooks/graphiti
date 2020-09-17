@@ -183,7 +183,7 @@ module Graphiti
       Chef::Log.debug "#{self}#add_to_dashboard: response #{r}"
     end
 
-    def remove_from_dashboard slug
+    def remove_from_dashboard(slug)
       r = dashboards.delete dashboard: slug, uuid: uuid
       Chef::Log.debug "#{self}#remove_to_dashboard: response #{r}"
     end
