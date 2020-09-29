@@ -208,7 +208,7 @@ module Graphiti
       'http://graphite/render/?'
     end
 
-    def encode_www_form enum
+    def encode_www_form(enum)
       enum.collect do |k, v|
         "#{k.to_s}=#{CGI.escape(v.to_s)}"
       end.join('&')
