@@ -282,7 +282,7 @@ module Graphiti
         }
       end
 
-      def graph_for type, default_options, node = nil
+      def graph_for(type, default_options, node = nil)
         {
           'options' => default_options,
           'targets' =>
