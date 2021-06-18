@@ -164,14 +164,13 @@ module Graphiti
 
         response = resource['graphs'][uuid].put uuid: uuid, graph: graph.deep_merge(remote_graph)
 
-        JSON.parse(response)
       else
         Chef::Log.debug "#{self}#save: creating graph: #{graph.inspect}"
 
         response = resource['graphs'].post graph: graph
 
-        JSON.parse(response)
       end
+      JSON.parse(response)
     end
 
     def dashboards
